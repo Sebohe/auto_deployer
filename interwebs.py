@@ -1,34 +1,19 @@
-#!/usr/bin/env python3
-import toml
-from web3 import (
-        Web3,
-        HTTPProvider
-        )
+from web3 import Web3, HTTPProvider
+import json
 
-from args import (
-        arg_parser
-        )
-
-import addresses
-import contracts
-import interwebs
-
-def readConfigFile(config):
-    config = toml.load(config)
-    pass
+def url_breaker(var):
+    s = var.split(':')
+    addr = s[0]+':'+s[1]
+    port = s[-1]
+    return addr, port
 
 if __name__=='__main__':
 
-    args = arg_parser()
-    w3 = web3.Web3(HTTPProvider(args.nodeURL))
-
-    deployer = args.deployer
-    try:
-        deployer = int(deployer)
-        deployer = w3.eth.accounts[deployer]
-    except:
-        pass
-
+    w3 = Web3(HTTPProvider(C['TEST']))
+    deployer = w3.eth.accounts[-1]
+    print (deployer)
+    print ()
+    
     tx_count = w3.eth.getTransactionCount(deployer)
     contracts = read_all_contracts('build')
     contrs_addrs = determine_addresses(deployer, tx_count, len(contracts))
