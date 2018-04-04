@@ -77,3 +77,6 @@ if __name__=='__main__':
     Contracts = generateConstructorsArgs(Contracts, config)
     Contracts = deployContracts(w3, Contracts, deployer)
 
+    print ("Network = {}".format(args.nodeURL), end = '\n\n')
+    for cKey in Contracts:
+        print ("{} = {}".format(cKey, Contracts[cKey]['address']), end ='\n\n')
