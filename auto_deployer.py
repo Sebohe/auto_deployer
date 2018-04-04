@@ -11,14 +11,12 @@ from args import (
 
 from addresses import determineContractAddr
 import contracts
-import interwebs
 
 def deployContracts(w3, contractObject, deployer, gasPrice=0):
 
     for key in contractObject:
 
         abi = contractObject[key]['abi']
-
         bytecode = contractObject[key]['bytecode']
         w3Contract = w3.eth.contract(
                                 abi = abi,
@@ -36,11 +34,9 @@ def deployContracts(w3, contractObject, deployer, gasPrice=0):
             tempList.append(value)
 
         args = tempList
-        print(args)
-
         txn = {'from': deployer, 'gasPrice': gasPrice} 
-        tx_hash = w3Contract.deploy(transaction=txn, args= args)
-        contractObject[key]['tx_has'] = tx_hash
+        txn_receipt = w3Contract.constructor(*args).transact(txn)
+        contractObject[key]['txn_receipt'] = txn_receipt
 
     return contractObject 
 
@@ -79,5 +75,5 @@ if __name__=='__main__':
         Contracts[cKey]['address'] = determineContractAddr(deployer, tx_count + index + 1)
     
     Contracts = generateConstructorsArgs(Contracts, config)
-
     Contracts = deployContracts(w3, Contracts, deployer)
+
