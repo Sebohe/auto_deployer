@@ -1,4 +1,4 @@
-import argparser
+import argparse
 
 def arg_parser():
 
@@ -6,7 +6,7 @@ def arg_parser():
 
     parser.add_argument('-n',
                         dest="nodeURL",
-                        default="localhost:8545",
+                        default="http://localhost:8545",
                         type=str,
                         help="node url input"
                         )
@@ -19,7 +19,7 @@ def arg_parser():
                         )
 
     parser.add_argument('-b',
-                        dest="byteDir",
+                        dest="buildDir",
                         default="./build",
                         type=str,
                         help="compiled contracts dir"

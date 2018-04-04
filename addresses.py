@@ -6,11 +6,12 @@ from ethereum.utils import (
         encode_hex
     )
 
-def determineContractAddr(deployerAddr, tx_count, qty):
+def determineContractAddr(deployerAddr, tx_count, qty=1):
 
     addresses = []
     for i in range(tx_count, tx_count + qty):
         _addr = str(encode_hex(mk_contract_address(deployerAddr, i)))
-        addresses.append(_addr)
+        _addr = _addr.replace("\'", "")
+        _addr = "0x" + _addr[1:]
 
-    return addresses
+    return _addr

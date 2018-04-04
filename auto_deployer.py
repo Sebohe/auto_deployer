@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import toml
+import toml 
 from web3 import (
         Web3,
         HTTPProvider
@@ -9,18 +9,45 @@ from args import (
         arg_parser
         )
 
-import addresses
+from addresses import determineContractAddr
 import contracts
 import interwebs
 
-def readConfigFile(config):
-    config = toml.load(config)
-    pass
+def deployContracts(w3, contractObject, deployer, gasPrice=0):
+
+    w3Contract = w3.eth.contract(
+                            abi = contractObject['abi'],
+                            bytecode = contractObject['bytecode']
+                            )
+
+    txn = {'from': deployer, 'gasPrice': gasPrice} 
+    args = contractObject['args']
+    tx_hash = w3Contract.deploy(transaction=txn, args=args)
+
+    return tx_hash
+
+def generateConstructorsArgs(contractObject, config):
+
+    contractNames = contractObject.keys()
+   
+    # The following loops add contract addresses to the contructor arguments
+    for cKey in contractObject:
+        args = list(config[cKey].values())
+        collisions = list(set(args).intersection(contractNames))
+        for cKey in collisions: 
+            for index in range(len(args)):
+                if args[index] == cKey:
+                    args[index] = cKey + " " + contractObject[cKey]['address']
+
+        
+        contractObject[cKey]['args'] = args
+       
+    return contractObject
 
 if __name__=='__main__':
 
     args = arg_parser()
-    w3 = web3.Web3(HTTPProvider(args.nodeURL))
+    w3 = Web3(HTTPProvider(args.nodeURL))
 
     deployer = args.deployer
     try:
@@ -29,28 +56,16 @@ if __name__=='__main__':
     except:
         pass
 
+    config = toml.load(args.config)
+    Contracts = contracts.generateContracts(args.buildDir, config.keys())
     tx_count = w3.eth.getTransactionCount(deployer)
-    contracts = read_all_contracts('build')
-    contrs_addrs = determine_addresses(deployer, tx_count, len(contracts))
-
-    # Assign address to tokens
-    for i, c_key in enumerate(contracts):
-        contracts[c_key]['addr'] = contrs_addrs[i]
-
-   
-    contracts = read_deploy_args(contracts)
-
-    """
-    for c_key in contracts:
-        print (contracts[c_key])
-        print()
-    """
-
-    for c_key in contracts:
-
-        contracts[c_key]['class'].deploy(
-                {'from': deployer}, args = contracts[c_key]['args']
-                )
 
 
+    for index, cKey in enumerate(Contracts):
+        Contracts[cKey]['address'] = determineContractAddr(deployer, tx_count + index + 1)
+    
+    Contracts = generateConstructorsArgs(Contracts, config)
+
+    for cKey in Contracts:
+        Contracts[cKey]['args']
 
