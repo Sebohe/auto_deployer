@@ -15,31 +15,45 @@ import interwebs
 
 def deployContracts(w3, contractObject, deployer, gasPrice=0):
 
-    w3Contract = w3.eth.contract(
-                            abi = contractObject['abi'],
-                            bytecode = contractObject['bytecode']
-                            )
+    for key in contractObject:
 
-    txn = {'from': deployer, 'gasPrice': gasPrice} 
-    args = contractObject['args']
-    tx_hash = w3Contract.deploy(transaction=txn, args=args)
+        abi = contractObject[key]['abi']
 
-    return tx_hash
+        bytecode = contractObject[key]['bytecode']
+        w3Contract = w3.eth.contract(
+                                abi = abi,
+                                bytecode = bytecode 
+                                )
+
+        tempList = []
+        for a in contractObject[key]['args']:
+            value = a.split(" ")[1]
+            try:
+                value = int(value)
+            except:
+                pass
+
+            tempList.append(value)
+
+        args = tempList
+        print(args)
+
+        txn = {'from': deployer, 'gasPrice': gasPrice} 
+        tx_hash = w3Contract.deploy(transaction=txn, args= args)
+        contractObject[key]['tx_has'] = tx_hash
+
+    return contractObject 
 
 def generateConstructorsArgs(contractObject, config):
 
-    contractNames = contractObject.keys()
-   
     # The following loops add contract addresses to the contructor arguments
     for cKey in contractObject:
-        args = list(config[cKey].values())
-        collisions = list(set(args).intersection(contractNames))
-        for cKey in collisions: 
-            for index in range(len(args)):
-                if args[index] == cKey:
-                    args[index] = cKey + " " + contractObject[cKey]['address']
+        args = list(config[cKey].values()) 
+        for index in range(len(args)):
+            containsAddr = args[index].split(" ")
+            if "address" == containsAddr[1]:
+                args[index] = cKey + " " + contractObject[containsAddr[0]]['address']
 
-        
         contractObject[cKey]['args'] = args
        
     return contractObject
@@ -66,6 +80,4 @@ if __name__=='__main__':
     
     Contracts = generateConstructorsArgs(Contracts, config)
 
-    for cKey in Contracts:
-        Contracts[cKey]['args']
-
+    Contracts = deployContracts(w3, Contracts, deployer)
