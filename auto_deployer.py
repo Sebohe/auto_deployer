@@ -72,7 +72,7 @@ if __name__=='__main__':
 
 
     for index, cKey in enumerate(Contracts):
-        Contracts[cKey]['address'] = determineContractAddr(deployer, tx_count + index + 1)
+        Contracts[cKey]['address'] = determineContractAddr(deployer, tx_count + index)
     
     Contracts = generateConstructorsArgs(Contracts, config)
     Contracts = deployContracts(w3, Contracts, deployer)
